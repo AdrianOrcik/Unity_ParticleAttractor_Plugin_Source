@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\adria\.Rider2019.2\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\adria\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_Unity_ParticleAttractor_Plugin.1279252799.00" t="ExcludeRecursive" />
+    <e p="D:\workspace\Unity_ParticleAttractor_Plugin\Unity_ParticleAttractor_Plugin" t="IncludeRecursive">
+      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="Demigiant" t="Include">
+          <e p="DOTween" t="Include">
+            <e p="Modules" t="Include">
+              <e p="DOTweenModuleAudio.cs" t="Include" />
+              <e p="DOTweenModulePhysics.cs" t="Include" />
+              <e p="DOTweenModulePhysics2D.cs" t="Include" />
+              <e p="DOTweenModuleSprite.cs" t="Include" />
+              <e p="DOTweenModuleUI.cs" t="Include" />
+              <e p="DOTweenModuleUnityVersion.cs" t="Include" />
+              <e p="DOTweenModuleUtils.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="ParticleAttractor" t="Include">
+          <e p="TEST_ParticleAttractor" t="Include">
+            <e p="Attractor" t="Include">
+              <e p="Editor" t="Include">
+                <e p="ParticleAttractorInspector.cs" t="Include" />
+              </e>
+              <e p="ParticleAttractor.cs" t="Include" />
+              <e p="ParticleAttractorHelper.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+      </e>
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+      <e p="Unity_ParticleAttractor_Plugin.sln" t="IncludeFlat" />
+    </e>
+  </component>
+</project>

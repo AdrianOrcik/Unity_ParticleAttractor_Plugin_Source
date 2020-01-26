@@ -36,6 +36,8 @@ Develop particle attractor tool with a focus to the juicy specific situation in-
 :card_file_box: API
 ---------
 #### Scenario API
+Following functions are using for particle scenario.
+
 * Transform_DoScale(Vector3 toScale, float duration)
   * Scale in duration time
 * Transform_DoScale_UpDown(Vector3 toScaleUp,Vector3 toScaleDown, float duration)

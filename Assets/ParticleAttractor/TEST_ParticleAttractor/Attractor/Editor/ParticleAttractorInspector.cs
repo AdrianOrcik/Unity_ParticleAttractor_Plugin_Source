@@ -12,12 +12,6 @@ public class ParticleAttractorInspector : Editor
     List<MethodInfo> _scenarioInfo = new List<MethodInfo>();
 
     const float X_PADDING = 10.0f;
-    string _templateName;
-    bool _ParticleManagement = true;
-    bool _ComponentSettings = true;
-    bool _ParticleSettings = true;
-    bool _ScenarioTemplates = true;
-    bool _ScenarioList = true;
     ParticleAttractor ParticleAttractor => target as ParticleAttractor;
 
     void InitScenarioList()
@@ -134,51 +128,46 @@ public class ParticleAttractorInspector : Editor
 
      public override void OnInspectorGUI()
      {
-         base.OnInspectorGUI();
-         _ParticleManagement =  EditorGUILayout.Foldout( _ParticleManagement, "Particle Management" );
-         if(_ParticleManagement){
-             GUILayout.BeginVertical("HelpBox");
-                 EditorGUILayout.LabelField( "Particle Management", EditorStyles.boldLabel );
-                 ParticleAttractor.SpawnMode = (ParticleAttractor.ParticleSpawnMode)EditorGUILayout.EnumPopup( "Spawn Mode: ",  ParticleAttractor.SpawnMode );
-                 ParticleAttractor.IsParticleVisible = EditorGUILayout.Toggle( "Visible Particles: ", ParticleAttractor.IsParticleVisible );
-                 ParticleAttractor.IsDrawEnable = EditorGUILayout.Toggle( "Draw Line: ", ParticleAttractor.IsDrawEnable );
-                 if( ParticleAttractor.IsDrawEnable )
+         
+         GUILayout.BeginVertical("HelpBox");
+             EditorGUILayout.LabelField( "Particle Management", EditorStyles.boldLabel );
+             ParticleAttractor.SpawnMode = (ParticleAttractor.ParticleSpawnMode)EditorGUILayout.EnumPopup( "Spawn Mode: ",  ParticleAttractor.SpawnMode );
+             ParticleAttractor.IsParticleVisible = EditorGUILayout.Toggle( "Visible Particles: ", ParticleAttractor.IsParticleVisible );
+             ParticleAttractor.IsDrawEnable = EditorGUILayout.Toggle( "Draw Line: ", ParticleAttractor.IsDrawEnable );
+             if( ParticleAttractor.IsDrawEnable )
+             {
+                 if(GUILayout.Button( "Assign main nodes" ))
                  {
-                     if(GUILayout.Button( "Assign main nodes" ))
-                     {
-                         ParticleAttractor.Points[0] = ParticleAttractor.SourceTransform.position;
-                         ParticleAttractor.Points[ParticleAttractor.Points.Count - 1] = ParticleAttractor.DestinationTransform.position;
-                     }
+                     ParticleAttractor.Points[0] = ParticleAttractor.SourceTransform.position;
+                     ParticleAttractor.Points[ParticleAttractor.Points.Count - 1] = ParticleAttractor.DestinationTransform.position;
                  }
-             GUILayout.EndVertical ();
-         }
-         _ComponentSettings =  EditorGUILayout.Foldout( _ComponentSettings, "Component Settings" );
-         if(_ComponentSettings){
-             GUILayout.BeginVertical("HelpBox");
-                 EditorGUILayout.LabelField( "Component Settings",EditorStyles.boldLabel );
-                 ParticleAttractor.SourceTransform =  (Transform)EditorGUILayout.ObjectField( "Source Transform", ParticleAttractor.SourceTransform, typeof( Transform ), true );
-                 ParticleAttractor.DestinationTransform = (Transform)EditorGUILayout.ObjectField( "Destination Transform", ParticleAttractor.DestinationTransform, typeof( Transform ), true );
-                 ParticleAttractor.RenderCanvas = (Canvas)EditorGUILayout.ObjectField( "RenderCanvas", ParticleAttractor.RenderCanvas, typeof( Canvas ), true );
-             GUILayout.EndVertical ();
-         }
-         _ParticleSettings =  EditorGUILayout.Foldout( _ParticleSettings, "Particle Settings" );
-         if(_ParticleSettings){
-             GUILayout.BeginVertical("HelpBox");
-                 EditorGUILayout.LabelField( "Particles Settings",EditorStyles.boldLabel );
-                 ParticleAttractor.SpawnAmount = EditorGUILayout.IntField( "Spawn Amount", ParticleAttractor.SpawnAmount );
-                 ParticleAttractor.SpawnRange = EditorGUILayout.FloatField( "Spawn Position Range", ParticleAttractor.SpawnRange );
-                 ParticleAttractor.DurationRandomRange = EditorGUILayout.FloatField( "Duration Random (%)", ParticleAttractor.DurationRandomRange );
-                 ParticleAttractor.SpawnImage = (Sprite)EditorGUILayout.ObjectField( "Sprite", ParticleAttractor.SpawnImage, typeof( Sprite ), true );
-             GUILayout.EndVertical ();
-         }
-         _ScenarioList =  EditorGUILayout.Foldout( _ScenarioList, "Scenario List" ); 
-         if(_ScenarioList){
-             if( _scenarioInfo == null ) InitScenarioList();
-             _scenarioList.DoLayoutList();
-             _scenarioInfo = typeof( ParticleAttractor ).GetMethods(BindingFlags.NonPublic | 
-                 BindingFlags.Public | 
-                 BindingFlags.Instance).Where( p=>p.IsDefined( typeof(ParticleScenario ),true)).ToList();
-         }
+             }
+         GUILayout.EndVertical ();
+
+         GUILayout.BeginVertical("HelpBox");
+             EditorGUILayout.LabelField( "Component Settings",EditorStyles.boldLabel );
+             ParticleAttractor.SourceTransform =  (Transform)EditorGUILayout.ObjectField( "Source Transform", ParticleAttractor.SourceTransform, typeof( Transform ), true );
+             ParticleAttractor.DestinationTransform = (Transform)EditorGUILayout.ObjectField( "Destination Transform", ParticleAttractor.DestinationTransform, typeof( Transform ), true );
+             ParticleAttractor.RenderCanvas = (Canvas)EditorGUILayout.ObjectField( "RenderCanvas", ParticleAttractor.RenderCanvas, typeof( Canvas ), true );
+         GUILayout.EndVertical ();
+         
+
+         GUILayout.BeginVertical("HelpBox");
+             EditorGUILayout.LabelField( "Particles Settings",EditorStyles.boldLabel );
+             ParticleAttractor.SpawnAmount = EditorGUILayout.IntField( "Spawn Amount", ParticleAttractor.SpawnAmount );
+             ParticleAttractor.SpawnRange = EditorGUILayout.FloatField( "Spawn Position Range", ParticleAttractor.SpawnRange );
+             ParticleAttractor.DurationRandomRange = EditorGUILayout.FloatField( "Duration Random (%)", ParticleAttractor.DurationRandomRange );
+             ParticleAttractor.SpawnImage = (Sprite)EditorGUILayout.ObjectField( "Sprite", ParticleAttractor.SpawnImage, typeof( Sprite ), true );
+         GUILayout.EndVertical ();
+         
+
+         if( _scenarioInfo == null ) InitScenarioList();
+         _scenarioList.DoLayoutList();
+         _scenarioInfo = typeof( ParticleAttractor ).GetMethods(BindingFlags.NonPublic | 
+             BindingFlags.Public | 
+             BindingFlags.Instance).Where( p=>p.IsDefined( typeof(ParticleScenario ),true)).ToList();
+         
+         base.OnInspectorGUI();
      }
      
      void OnSceneGUI()

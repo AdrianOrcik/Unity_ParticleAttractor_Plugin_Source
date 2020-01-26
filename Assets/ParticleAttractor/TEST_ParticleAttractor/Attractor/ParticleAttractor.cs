@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -15,24 +16,23 @@ public class ParticleAttractor : MonoBehaviour
     /// Before process callback
     /// Note: Invoked before spawn first particle
     /// </summary>
-    public Action OnBeforePlay;
+    public Action OnBeforePlay_Action;
     
     /// <summary>
     /// After particle lifetime is zero callback
     /// Note: Invoked after first particle process is done
     /// </summary>
-    public Action OnParticleDone;
-    
+    public Action OnParticleDone_Action;
+
     /// <summary>
     /// After process is done callback
     /// Note: Invoked after all particles are spawned
     /// </summary>
-    public Action OnAfterPlay;
+    public Action OnAfterPlay_Action;
     #endregion PA_Events
     
     Sequence Sequence_1;
-    Sequence Sequence_2;
-    
+
     enum ParticleScenarioType{DoScale = 0, DoScaleUpDown = 1, DoMove = 2, 
         DoMoveSetTarget = 3, DoRotate = 4, DoFade = 5, DoBoom = 6, DoDelayInRange = 7, DoDrawMove = 8}
     public enum ParticleSpawnMode{SeveralFrames = 0, OneFrame = 1}
@@ -69,7 +69,12 @@ public class ParticleAttractor : MonoBehaviour
     Queue<GameObject> _activeObjects = new Queue<GameObject>();
     GameObject _particleObj;
     MethodInfo[] _scenarioInfos;
-
+    
+    //Editor based attractrion events
+    public UnityEvent OnBeforePlay;
+    public UnityEvent OnParticleDone;
+    public UnityEvent OnAfterPlay;
+    
     void Start()
     {
         _scenarioInfos =  typeof( ParticleAttractor ).GetMethods( BindingFlags.NonPublic |
@@ -128,6 +133,24 @@ public class ParticleAttractor : MonoBehaviour
         IsSetupAttractor = value;
         return this;
     }
+    
+    public ParticleAttractor SetOnBeforePlayEvent( Action action)
+    {
+        OnBeforePlay_Action = action;
+        return this;
+    }
+    
+    public ParticleAttractor SetOnParticleDoneEvent( Action action)
+    {
+        OnParticleDone_Action = action;
+        return this;
+    }
+    
+    public ParticleAttractor SetOnAfterPlayEvent( Action action)
+    {
+        OnAfterPlay_Action = action;
+        return this;
+    }
 
     /// <summary>
     /// Invoke attractor process 
@@ -166,16 +189,11 @@ public class ParticleAttractor : MonoBehaviour
     
     void SafeSpawn( Transform sourceTransform )
     {
-        if( !IsSetupAttractor ) return;
+        if( !IsSetupAttractor ) return; 
         IsSetupAttractor = false;
         SourceTransform = sourceTransform;
         StartCoroutine( SpawnMode == ParticleSpawnMode.OneFrame ? 
             SpawnParticlesInOneFrame( SpawnAmount ) : SpawnParticlesInSeveralFrames( SpawnAmount ) );
-    }
-
-    public void Debug_Spawn()
-    {
-        Debug.Log( "Debug_Spawn Invoked" );
     }
     
     public IEnumerator SpawnParticlesToPool( int spawnAmount )
@@ -190,19 +208,18 @@ public class ParticleAttractor : MonoBehaviour
     public IEnumerator SpawnParticlesInOneFrame(int spawnAmount) 
     {
         SetAsActive();
+        OnBeforePlay_Action?.Invoke();
         OnBeforePlay?.Invoke();
         for(var i = 0; i < spawnAmount; i++){
 
             Sequence_1 = DOTween.Sequence();
-            Sequence_2 = DOTween.Sequence();
             
             _particleObj = CreateOrGetPooledObj();
             _particleObj.transform.position = GenerateSpawnPositionRange();
             _activeObjects.Enqueue( _particleObj );
 
             GenerateSequences();
-            Sequence_1.Append( DOTween.Sequence() );
-            Sequence_2.Append( DOTween.Sequence() ).OnComplete( DoComplete );
+            Sequence_1.Append( DOTween.Sequence() ).OnComplete( DoComplete );
         }
         
         yield return typeof( WaitForEndOfFrame );
@@ -210,8 +227,11 @@ public class ParticleAttractor : MonoBehaviour
         {
             t.gameObject.SetActive( true );
         }
+        OnAfterPlay_Action?.Invoke();
         OnAfterPlay?.Invoke();
+        
         OnAfterPlay = null;
+        OnAfterPlay_Action = null;
         SetAsDeactivated();
     }
     
@@ -219,24 +239,25 @@ public class ParticleAttractor : MonoBehaviour
     public IEnumerator SpawnParticlesInSeveralFrames(int spawnAmount) 
     {
         SetAsActive();
-        OnBeforePlay?.Invoke();
+        OnBeforePlay_Action?.Invoke();
         for(var i = 0; i < spawnAmount; i++){
 
             Sequence_1 = DOTween.Sequence();
-            Sequence_2 = DOTween.Sequence();
-            
+
             _particleObj = CreateOrGetPooledObj();
             _particleObj.transform.position = GenerateSpawnPositionRange();
             _particleObj.SetActive( true );
             _activeObjects.Enqueue( _particleObj );
 
             GenerateSequences();
-            Sequence_1.Append( DOTween.Sequence() );
-            Sequence_2.Append( DOTween.Sequence() ).OnComplete( DoComplete ); 
+            Sequence_1.Append( DOTween.Sequence() ).OnComplete( DoComplete ); 
             yield return typeof( WaitForEndOfFrame );
         }
+        OnAfterPlay_Action?.Invoke();
         OnAfterPlay?.Invoke();
+        
         OnAfterPlay = null;
+        OnAfterPlay_Action = null;
         SetAsDeactivated();
     }
     
@@ -247,35 +268,27 @@ public class ParticleAttractor : MonoBehaviour
             switch( action.ActionID )
             {
                 case (int)ParticleScenarioType.DoScale:
-                    Sequence_2.Append( (Tween) _scenarioInfos[action.ActionID].Invoke( this, new object[]{action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
+                    Sequence_1.Append( (Tween) _scenarioInfos[action.ActionID].Invoke( this, new object[]{action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
                     break;
                 case (int)ParticleScenarioType.DoScaleUpDown:
-                    Sequence_2.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
-                    Sequence_2.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.VectorParam_2, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
+                    Sequence_1.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
+                    Sequence_1.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.VectorParam_2, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
                     break;
                 case (int)ParticleScenarioType.DoMove:
-                    Sequence_2.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
+                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
                     break;
                 case (int)ParticleScenarioType.DoMoveSetTarget:
                 case (int)ParticleScenarioType.DoRotate:
-                    Sequence_2.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TransformParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
+                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TransformParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
                     break;
                 case (int)ParticleScenarioType.DoFade:
-                    Sequence_2.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.FloatParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
-                    break;
-                case (int)ParticleScenarioType.DoBoom: 
-                    Sequence_1.Append( Transform_DoScale( action.VectorParam_1, action.DurationFloatParam * 0.2f ) );
-                    Sequence_1.Append( Transform_DoScale( action.VectorParam_1 * 0.3f, action.DurationFloatParam * 0.8f ) );
-                    Sequence_2.Append( Transform_DoRotate( new Vector3(0,0,0), 0.15f ) );
-                    var x = _particleObj.transform.position.x + Random.Range( -( action.VectorParam_2.x * 100f ), ( action.VectorParam_2.x * 100f ) );
-                    var y = _particleObj.transform.position.y + Random.Range( -( action.VectorParam_2.y * 100f ), ( action.VectorParam_2.y * 100f ) );
-                    Sequence_2.Append( Transform_DoMove_SetPosition( new Vector3(x,y), action.DurationFloatParam * 0.7f));
+                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.FloatParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
                     break;
                 case (int)ParticleScenarioType.DoDelayInRange:
-                    Sequence_2.AppendInterval( Sequence_DoDelayInRange( action.RangeFloatParam ));
+                    Sequence_1.AppendInterval( Sequence_DoDelayInRange( action.RangeFloatParam ));
                     break;
                 case (int)ParticleScenarioType.DoDrawMove:
-                    Sequence_2.Append( Transform_DODrawMove(action.DurationFloatParam) );
+                    Sequence_1.Append( Transform_DODrawMove(action.DurationFloatParam) );
                     break;
             }
         } 
@@ -297,15 +310,6 @@ public class ParticleAttractor : MonoBehaviour
     [ParticleScenario]
     public Tweener Transform_DoMove(float duration)
     {
-//        //Transform world to camera point movement
-//        //Note: used when target is in another canvas
-//        if(DestinationTargetTransform != null )
-//        {
-//            var screenPosition = Camera.main.WorldToScreenPoint( DestinationTargetTransform.position);
-//            return _particleObj.transform.DOMove( new Vector3 (screenPosition.x + DestinationTargetOffset.x,
-//                screenPosition.y+DestinationTargetOffset.y)  , duration);
-//        }
-        
         //Basic to world position movement
         return _particleObj.transform.DOMove( DestinationTransform.position, duration);
     }
@@ -327,14 +331,7 @@ public class ParticleAttractor : MonoBehaviour
     {
         return _particleObj.GetComponent<SpriteRenderer>().DOFade( toFade, duration );
     }
-    
-    [ParticleScenario]
-    public Tweener Effect_DoBoom(Vector3 explosionScaleUp, Vector3 explosionMoveRange, float duration)
-    {
-        //Note: used as definition of method
-        return null;
-    }
-    
+
     [ParticleScenario]
     public float Sequence_DoDelayInRange(Vector2 rangeFloatParam)
     {
@@ -359,8 +356,11 @@ public class ParticleAttractor : MonoBehaviour
         o.SetActive( false );
         _pooledObjects.Enqueue( o );
         
+        OnParticleDone_Action?.Invoke();
         OnParticleDone?.Invoke();
+        
         OnParticleDone = null;
+        OnParticleDone_Action = null;
     }
 
     GameObject CreateOrGetPooledObj()

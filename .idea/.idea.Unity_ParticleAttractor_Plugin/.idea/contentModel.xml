@@ -31,6 +31,9 @@
             </e>
           </e>
         </e>
+        <e p="Scripts" t="Include">
+          <e p="CurrencyManager.cs" t="Include" />
+        </e>
       </e>
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />

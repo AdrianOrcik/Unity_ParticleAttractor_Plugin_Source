@@ -26,10 +26,10 @@ Develop particle attractor tool with a focus to the juicy specific situation in-
   
 :pencil: List of features 
 ---------
-* Familiar with Particle System
-* Ability to create a scenario for particles
-* Two spawn modes
-* Ability draw particle path
+* Ability setup effect without coding
+* Similar to Particle System
+* Two spawn modes (OneFrame,SeveralFrames)
+* Ability draw particle path by hand
 * Handy tool inspector
 * Easy API to use
 
@@ -78,8 +78,12 @@ Particle Attractor API is powered by Builder Patter for universal and easy usabi
   * Means currently PA has not active process & is ready for use
 
 :page_facing_up: Examples
----------
-//TODO: add examples (using of api)
+--------- 
+#### Simple Effect
+![SimpleAttractorEffect](https://user-images.githubusercontent.com/14979589/73284387-29adaa80-41fd-11ea-8229-16e46664aa7a.gif)
+
+#### Drawed Effect 
+![DrawAttractorEffect](https://user-images.githubusercontent.com/14979589/73284391-2aded780-41fd-11ea-8573-99ed373e4bda.gif)
 
 :package: Installing
 ---------

@@ -34,7 +34,7 @@ public class ParticleAttractor : MonoBehaviour
     Sequence Sequence_1;
 
     enum ParticleScenarioType{DoScale = 0, DoScaleUpDown = 1, DoMove = 2, 
-        DoMoveSetTarget = 3, DoRotate = 4, DoFade = 5, DoBoom = 6, DoDelayInRange = 7, DoDrawMove = 8}
+        DoMoveSetTarget = 3, DoRotate = 4, DoFade = 5, DoDelayInRange = 6, DoDrawMove = 7}
     public enum ParticleSpawnMode{SeveralFrames = 0, OneFrame = 1}
     
     //Particle management settings
@@ -62,7 +62,7 @@ public class ParticleAttractor : MonoBehaviour
     //Attractor data structures
     [HideInInspector] public List<ScenarioAction> ScenarioList;
     [HideInInspector] public string SelectedTemplateKey;
-    [HideInInspector] public List<Vector3> Points;
+    public List<Vector3> Points;
     [HideInInspector] public bool IsSetupAttractor;
     [HideInInspector] public bool IsActiveProcess;
     Queue<GameObject> _pooledObjects = new Queue<GameObject>();
@@ -79,7 +79,7 @@ public class ParticleAttractor : MonoBehaviour
     {
         _scenarioInfos =  typeof( ParticleAttractor ).GetMethods( BindingFlags.NonPublic |
             BindingFlags.Public |
-            BindingFlags.Instance ).Where( p => p.IsDefined( typeof( ParticleScenario ), true ) ).ToArray();
+            BindingFlags.Instance ).Where( p => p.IsDefined( typeof( ParticleScenario ), true ) ).ToArray(); 
         
         if(SpawnMode == ParticleSpawnMode.OneFrame)
             StartCoroutine( SpawnParticlesToPool( SpawnAmount ) );

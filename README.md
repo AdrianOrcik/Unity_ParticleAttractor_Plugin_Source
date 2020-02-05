@@ -3,7 +3,7 @@
 (Unity open source plugin) - Package contains open source code
 Boost your UI effect to another level.
 
-![image](https://user-images.githubusercontent.com/14979589/73138438-2a163c00-406b-11ea-9c1c-a280e6b5b35c.png)
+![image](https://user-images.githubusercontent.com/14979589/73867506-8ccbbc80-484f-11ea-8df4-aa3fcee711c2.png)
 
 :bulb: Idea
 ---------
@@ -11,7 +11,7 @@ Develop particle attractor tool with a focus to the juicy specific situation in-
 
 :pushpin: Architecture
 ---------
-![image](https://user-images.githubusercontent.com/14979589/73138330-13231a00-406a-11ea-80fe-034968d3fd27.png)
+![image](https://user-images.githubusercontent.com/14979589/73868104-8f7ae180-4850-11ea-83e3-bb6a8cde332d.png)
 
 * DOTweenCore
   * Using DOTween as the main handler for particle attraction 
@@ -21,6 +21,8 @@ Develop particle attractor tool with a focus to the juicy specific situation in-
   * Particle manager which handle performance and use pre-defined particle scenarios from the stage before
 * ParticleAttractorHelper
   * The static class which contain supported methods like data getters or data structures
+* ParticleAttractorPool
+  * Share obj pool with flyweight optimization on objects 
 * API
   * Prepared accessibility for easy implementation in the game
   
@@ -85,6 +87,11 @@ Particle Attractor API is powered by Builder Patter for universal and easy usabi
 #### Drawed Effect 
 ![DrawAttractorEffect](https://user-images.githubusercontent.com/14979589/73284391-2aded780-41fd-11ea-8573-99ed373e4bda.gif)
 
+:wrench: Requirement
+---------
+* DOTween plugin
+
 :package: Installing
 ---------
-//TODO: add description
+* Download DOTween
+* Install ParticleAttractor package

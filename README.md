@@ -88,11 +88,7 @@ Particle Attractor API is powered by Builder Patter for universal and easy usabi
 * SetAsDeactivated()
   * Means currently PA has not active process & is ready for use
 
-:wrench: Requirement
----------
-* DOTween plugin
-
 :package: Installing
 ---------
-* Download DOTween
-* Install ParticleAttractor package
+* Download & import package
+* [Download Here](https://github.com/AdrianOrcik/Unity_Plugin_TodoIst)

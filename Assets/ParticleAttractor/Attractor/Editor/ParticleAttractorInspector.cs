@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using DG.Tweening;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
@@ -12,6 +14,8 @@ public class ParticleAttractorInspector : Editor
     List<MethodInfo> _scenarioInfo = new List<MethodInfo>();
 
     const float X_PADDING = 10.0f;
+    string _templateName;
+
     ParticleAttractor ParticleAttractor => target as ParticleAttractor;
 
     void InitScenarioList()
@@ -48,8 +52,7 @@ public class ParticleAttractorInspector : Editor
          _scenarioList.onAddCallback -= AddItem;
          _scenarioList.onRemoveCallback -= RemoveItem;
      }
-
-
+     
      void DrawHeader(Rect rect)
      {
          GUI.Label(rect, "Particle Scenario");
@@ -64,17 +67,15 @@ public class ParticleAttractorInspector : Editor
          var paramInfo = _scenarioInfo[item.ActionID].GetParameters();
          var maxPropertyCount = _scenarioInfo.Select( info => info.GetParameters().Length ).Concat( new[] { 0 } ).Max();
 
-         item.ActionID = EditorGUI.Popup( new Rect( rect.x + X_PADDING, rect.y, rect.width - X_PADDING, rect.height - 
-                                            (EditorGUIUtility.singleLineHeight * maxPropertyCount)), item.ActionID, _scenarioInfo.Select( scenario => scenario.Name ).ToArray() );
-         
-         for( var i = 0; i < maxPropertyCount; i++ )
-         {
-             var lastRowOffset = (i + 1) == maxPropertyCount ? 0 : 1;
-             var rowID = i+1;
-             var rowOffset = ((paramInfo.Length)-rowID);
-             var rowRect = new Rect( rect.x + X_PADDING, rect.y + ( EditorGUIUtility.singleLineHeight * (rowID) ), 
-                 rect.width - X_PADDING, rect.height - ( EditorGUIUtility.singleLineHeight * ( rowID + lastRowOffset +rowOffset ) ) );
+         item.ActionID = EditorGUI.Popup( new Rect( rect.x + X_PADDING, rect.y, rect.width - X_PADDING, EditorGUIUtility.singleLineHeight),
+             item.ActionID, _scenarioInfo.Select( scenario => scenario.Name ).ToArray() );
 
+         for( var i = 0; i < paramInfo.Length; i++ )
+         {
+             var rowID = i+1;
+             var rowRect = new Rect( rect.x + X_PADDING, rect.y + ( EditorGUIUtility.singleLineHeight * (rowID) ), 
+                 rect.width - X_PADDING, EditorGUIUtility.singleLineHeight);
+             
              if( i >= paramInfo.Length ) break;
 
              if( paramInfo[i].ParameterType == typeof( Vector2 ) )
@@ -89,8 +90,8 @@ public class ParticleAttractorInspector : Editor
              
              if( paramInfo[i].ParameterType == typeof( Vector3 ) )
              {
-                 if(i==0) item.VectorParam_1 =  EditorGUI.Vector3Field( rowRect,paramInfo[i].Name,item.VectorParam_1);
-                 if(i==1) item.VectorParam_2 =  EditorGUI.Vector3Field( rowRect,paramInfo[i].Name,item.VectorParam_2);
+                 if(i==1) item.VectorParam_1 =  EditorGUI.Vector3Field( rowRect,paramInfo[i].Name,item.VectorParam_1);
+                 if(i==2) item.VectorParam_2 =  EditorGUI.Vector3Field( rowRect,paramInfo[i].Name,item.VectorParam_2);
              }
              
              if( paramInfo[i].ParameterType == typeof( float ))
@@ -102,6 +103,11 @@ public class ParticleAttractorInspector : Editor
              {
                  item.BoolParam = EditorGUI.Toggle( rowRect,paramInfo[i].Name,item.BoolParam);
              }
+             
+             if( paramInfo[i].ParameterType == typeof( Ease ) )
+             {
+                 item.TweenEase = (Ease)EditorGUI.EnumPopup(rowRect, paramInfo[i].Name, item.TweenEase);
+             }
          }
 
          if (EditorGUI.EndChangeCheck())
@@ -109,7 +115,7 @@ public class ParticleAttractorInspector : Editor
              EditorUtility.SetDirty(target);
          }
          
-         _scenarioList.elementHeight = EditorGUIUtility.singleLineHeight * (maxPropertyCount + 1);
+         _scenarioList.elementHeight = EditorGUIUtility.singleLineHeight * (paramInfo.Length + (maxPropertyCount - paramInfo.Length) + 1);
      }
 
      void AddItem(ReorderableList list)
@@ -128,11 +134,16 @@ public class ParticleAttractorInspector : Editor
 
      public override void OnInspectorGUI()
      {
+
+
+         if( GUILayout.Button( "Spawn (PlayMode)" ) )
+         {
+             ParticleAttractor.TestSpawn();
+         }
          
          GUILayout.BeginVertical("HelpBox");
              EditorGUILayout.LabelField( "Particle Management", EditorStyles.boldLabel );
              ParticleAttractor.SpawnMode = (ParticleAttractor.ParticleSpawnMode)EditorGUILayout.EnumPopup( "Spawn Mode: ",  ParticleAttractor.SpawnMode );
-             ParticleAttractor.IsParticleVisible = EditorGUILayout.Toggle( "Visible Particles: ", ParticleAttractor.IsParticleVisible );
              ParticleAttractor.IsDrawEnable = EditorGUILayout.Toggle( "Draw Line: ", ParticleAttractor.IsDrawEnable );
              if( ParticleAttractor.IsDrawEnable )
              {
@@ -143,6 +154,7 @@ public class ParticleAttractorInspector : Editor
                  }
              }
          GUILayout.EndVertical ();
+         
 
          GUILayout.BeginVertical("HelpBox");
              EditorGUILayout.LabelField( "Component Settings",EditorStyles.boldLabel );
@@ -160,7 +172,6 @@ public class ParticleAttractorInspector : Editor
              ParticleAttractor.SpawnImage = (Sprite)EditorGUILayout.ObjectField( "Sprite", ParticleAttractor.SpawnImage, typeof( Sprite ), true );
          GUILayout.EndVertical ();
          
-
          if( _scenarioInfo == null ) InitScenarioList();
          _scenarioList.DoLayoutList();
          _scenarioInfo = typeof( ParticleAttractor ).GetMethods(BindingFlags.NonPublic | 
@@ -168,6 +179,7 @@ public class ParticleAttractorInspector : Editor
              BindingFlags.Instance).Where( p=>p.IsDefined( typeof(ParticleScenario ),true)).ToList();
          
          base.OnInspectorGUI();
+     
      }
      
      void OnSceneGUI()

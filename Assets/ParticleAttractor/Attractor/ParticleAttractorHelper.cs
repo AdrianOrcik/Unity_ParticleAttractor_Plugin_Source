@@ -1,4 +1,5 @@
 ﻿using System;
+using DG.Tweening;
 using UnityEngine;
 
 #region PA_Class
@@ -15,6 +16,7 @@ public struct DifferentCanvasTarget
 public class ScenarioAction
 {
     [SerializeField] public int ActionID;
+    [SerializeField] public Ease TweenEase;
     [SerializeField] public Vector3 VectorParam_1;
     [SerializeField] public Vector3 VectorParam_2;
     [SerializeField] public Transform TransformParam;
@@ -22,6 +24,17 @@ public class ScenarioAction
     [SerializeField] public bool BoolParam;
     [SerializeField] public float DurationFloatParam;
     [SerializeField] public Vector2 RangeFloatParam;
+}
+
+[Serializable]
+public class ParticlePartData
+{
+    public ParticlePartData(Sprite sprite)
+    {
+        Sprite = sprite;
+    }
+    
+    public Sprite Sprite{ get; set; }
 }
 #endregion PA_Class
 

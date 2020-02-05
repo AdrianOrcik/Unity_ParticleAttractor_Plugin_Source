@@ -61,19 +61,23 @@ public class ParticleAttractor : MonoBehaviour
     
     //Attractor data structures
     [HideInInspector] public List<ScenarioAction> ScenarioList;
-    [HideInInspector] public string SelectedTemplateKey;
     public List<Vector3> Points;
     [HideInInspector] public bool IsSetupAttractor;
     [HideInInspector] public bool IsActiveProcess;
-    Queue<GameObject> _pooledObjects = new Queue<GameObject>();
-    Queue<GameObject> _activeObjects = new Queue<GameObject>();
+    ParticleAttractorPool _particleAttractorPool;
+    ParticlePartData _particlePartData;
     GameObject _particleObj;
     MethodInfo[] _scenarioInfos;
     
-    //Editor based attractrion events
+    //Editor based attraction events
     public UnityEvent OnBeforePlay;
     public UnityEvent OnParticleDone;
     public UnityEvent OnAfterPlay;
+    
+    void Awake()
+    {
+        InitParticlePool();
+    }
     
     void Start()
     {
@@ -171,8 +175,18 @@ public class ParticleAttractor : MonoBehaviour
     }
     
     #endregion Builder_API
+
+    [ContextMenu( ( "Spawn" ) )]
+    public void TestSpawn()
+    {
+        _scenarioInfos =  typeof( ParticleAttractor ).GetMethods( BindingFlags.NonPublic |
+              BindingFlags.Public |
+              BindingFlags.Instance ).Where( p => p.IsDefined( typeof( ParticleScenario ), true ) ).ToArray();
+        
+        StartCoroutine( SpawnMode == ParticleSpawnMode.OneFrame ? 
+            SpawnParticlesInOneFrame( SpawnAmount ) : SpawnParticlesInSeveralFrames( SpawnAmount ) );
+    }
     
-    [ContextMenu( ( "Test Spawn" ) )]
     void Spawn()
     {
         StartCoroutine( SpawnMode == ParticleSpawnMode.OneFrame ? 
@@ -200,7 +214,8 @@ public class ParticleAttractor : MonoBehaviour
     {
         for( var i = 0; i < spawnAmount; i++ )
         {
-            _pooledObjects.Enqueue( CreateObj() );
+            if( _particleAttractorPool.GetPooledObjCount() >= spawnAmount ) yield break;
+            _particleAttractorPool.AddObjToPooledQueue( _particleAttractorPool.CreateObj() );
             yield return typeof( WaitForEndOfFrame );
         }
     }
@@ -214,16 +229,16 @@ public class ParticleAttractor : MonoBehaviour
 
             Sequence_1 = DOTween.Sequence();
             
-            _particleObj = CreateOrGetPooledObj();
-            _particleObj.transform.position = GenerateSpawnPositionRange();
-            _activeObjects.Enqueue( _particleObj );
+            _particleObj = _particleAttractorPool.CreateOrGetPooledObj();
+            InitParticleObject( ref _particleObj, ref _particlePartData );
+            _particleAttractorPool.AddObjToActiveQueue( _particleObj );
 
             GenerateSequences();
             Sequence_1.Append( DOTween.Sequence() ).OnComplete( DoComplete );
         }
         
         yield return typeof( WaitForEndOfFrame );
-        foreach( var t in _activeObjects )
+        foreach( var t in _particleAttractorPool.GetActiveQueue() )
         {
             t.gameObject.SetActive( true );
         }
@@ -244,10 +259,11 @@ public class ParticleAttractor : MonoBehaviour
 
             Sequence_1 = DOTween.Sequence();
 
-            _particleObj = CreateOrGetPooledObj();
-            _particleObj.transform.position = GenerateSpawnPositionRange();
+            _particleObj = _particleAttractorPool.CreateOrGetPooledObj();
+            
+            InitParticleObject( ref _particleObj, ref _particlePartData );
             _particleObj.SetActive( true );
-            _activeObjects.Enqueue( _particleObj );
+            _particleAttractorPool.AddObjToActiveQueue( _particleObj );
 
             GenerateSequences();
             Sequence_1.Append( DOTween.Sequence() ).OnComplete( DoComplete ); 
@@ -268,27 +284,27 @@ public class ParticleAttractor : MonoBehaviour
             switch( action.ActionID )
             {
                 case (int)ParticleScenarioType.DoScale:
-                    Sequence_1.Append( (Tween) _scenarioInfos[action.ActionID].Invoke( this, new object[]{action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
+                    Sequence_1.Append( (Tween) _scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TweenEase,action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
                     break;
                 case (int)ParticleScenarioType.DoScaleUpDown:
-                    Sequence_1.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
-                    Sequence_1.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.VectorParam_2, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
+                    Sequence_1.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.TweenEase,action.VectorParam_1, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
+                    Sequence_1.Append( (Tween)_scenarioInfos[(int)ParticleScenarioType.DoScale].Invoke( this, new object[]{action.TweenEase,action.VectorParam_2, GenerateInRange(action.DurationFloatParam,DurationRandomRange)} ));
                     break;
                 case (int)ParticleScenarioType.DoMove:
-                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
+                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TweenEase,GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
                     break;
                 case (int)ParticleScenarioType.DoMoveSetTarget:
                 case (int)ParticleScenarioType.DoRotate:
-                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TransformParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
+                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TweenEase,action.TransformParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
                     break;
                 case (int)ParticleScenarioType.DoFade:
-                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.FloatParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
+                    Sequence_1.Append( (Tween)_scenarioInfos[action.ActionID].Invoke( this, new object[]{action.TweenEase,action.FloatParam, GenerateInRange(action.DurationFloatParam,DurationRandomRange)}));
                     break;
                 case (int)ParticleScenarioType.DoDelayInRange:
                     Sequence_1.AppendInterval( Sequence_DoDelayInRange( action.RangeFloatParam ));
                     break;
                 case (int)ParticleScenarioType.DoDrawMove:
-                    Sequence_1.Append( Transform_DODrawMove(action.DurationFloatParam) );
+                    Sequence_1.Append( Transform_DODrawMove(action.TweenEase,action.DurationFloatParam) );
                     break;
             }
         } 
@@ -296,40 +312,40 @@ public class ParticleAttractor : MonoBehaviour
     
     #region PA_Tweens
     [ParticleScenario]
-    public Tweener Transform_DoScale(Vector3 toScale, float duration)
+    public Tweener Transform_DoScale(Ease tweenEase,Vector3 toScale, float duration)
     {
-        return _particleObj.transform.DOScale( toScale, duration );
+        return _particleObj.transform.DOScale( toScale, duration ).SetEase(tweenEase);
     }
     
     [ParticleScenario]
-    public Tweener Transform_DoScale_UpDown(Vector3 toScaleUp,Vector3 toScaleDown, float duration)
+    public Tweener Transform_DoScale_UpDown(Ease tweenEase,Vector3 toScaleUp,Vector3 toScaleDown, float duration)
     {
         return null; //Note: used as definition of method
     }
     
     [ParticleScenario]
-    public Tweener Transform_DoMove(float duration)
+    public Tweener Transform_DoMove(Ease tweenEase,float duration)
     {
         //Basic to world position movement
-        return _particleObj.transform.DOMove( DestinationTransform.position, duration);
+        return _particleObj.transform.DOMove( DestinationTransform.position, duration).SetEase(tweenEase);
     }
     
     [ParticleScenario]
-    public Tweener Transform_DoMove_SetTarget(Transform toTransform, float duration)
+    public Tweener Transform_DoMove_SetTarget(Ease tweenEase,Transform toTransform, float duration)
     {
-        return _particleObj.transform.DOMove( toTransform.position, duration);
+        return _particleObj.transform.DOMove( toTransform.position, duration).SetEase(tweenEase);
     }
     
     [ParticleScenario]
-    public Tweener Transform_DoRotate(Vector3 toRotate, float duration)
+    public Tweener Transform_DoRotate(Ease tweenEase,Vector3 toRotate, float duration)
     {
-        return _particleObj.transform.DORotate( toRotate, duration);
+        return _particleObj.transform.DORotate( toRotate, duration).SetEase(tweenEase);
     }
     
     [ParticleScenario]
-    public Tweener SpriteRenderer_DoFade(float toFade, float duration)
+    public Tweener SpriteRenderer_DoFade(Ease tweenEase,float toFade, float duration)
     {
-        return _particleObj.GetComponent<SpriteRenderer>().DOFade( toFade, duration );
+        return _particleObj.GetComponent<SpriteRenderer>().DOFade( toFade, duration ).SetEase(tweenEase);
     }
 
     [ParticleScenario]
@@ -339,22 +355,22 @@ public class ParticleAttractor : MonoBehaviour
     }
     
     [ParticleScenario]
-    public Tweener Transform_DODrawMove(float duration)
+    public Tweener Transform_DODrawMove(Ease tweenEase,float duration)
     {
-        return _particleObj.transform.DOPath(Points.ToArray(),duration,PathType.CatmullRom,PathMode.Sidescroller2D);
+        return _particleObj.transform.DOPath(Points.ToArray(),duration,PathType.CatmullRom,PathMode.Sidescroller2D).SetEase(tweenEase);
     }
     
-    public Tweener Transform_DoMove_SetPosition(Vector3 toPosition, float duration)
+    public Tweener Transform_DoMove_SetPosition(Ease tweenEase,Vector3 toPosition, float duration)
     {
-        return _particleObj.transform.DOMove( toPosition, duration);
+        return _particleObj.transform.DOMove( toPosition, duration).SetEase(tweenEase);
     }
     #endregion PA_Tweens
     
     void DoComplete()
     {
-        var o = _activeObjects.Dequeue();
+        var o = _particleAttractorPool.GetActiveObj();
         o.SetActive( false );
-        _pooledObjects.Enqueue( o );
+        _particleAttractorPool.AddObjToPooledQueue( o );
         
         OnParticleDone_Action?.Invoke();
         OnParticleDone?.Invoke();
@@ -362,39 +378,10 @@ public class ParticleAttractor : MonoBehaviour
         OnParticleDone = null;
         OnParticleDone_Action = null;
     }
-
-    GameObject CreateOrGetPooledObj()
-    {
-        GameObject obj;
-        if(_pooledObjects.Count > 0)
-        {
-            obj = _pooledObjects.Dequeue();
-            obj.GetComponent<Image>().sprite = SpawnImage;
-        }
-        else
-        {
-            obj = CreateObj();
-        }
-        
-        obj.transform.localScale = new Vector3(0.0f,0.0f,0.0f);
-        return obj;
-    }
-
-    GameObject CreateObj()
-    {
-        GameObject obj;
-        obj = new GameObject("ParticlePart");
-        obj.AddComponent<Image>().sprite = SpawnImage;
-        obj.transform.SetParent( this.transform );
-        obj.gameObject.SetActive( false );
-        if(!IsParticleVisible)obj.hideFlags = HideFlags.HideInHierarchy;
-        return obj;
-    }
     
     float GenerateInRange( float value, float byRange )
     {
-        if( (int)byRange == 0 ) return value;
-        return Random.Range( value, value * 2f);
+        return (int)byRange == 0 ? value : Random.Range( value, value * 2f);
     }
 
     Vector3 GenerateSpawnPositionRange()
@@ -405,5 +392,28 @@ public class ParticleAttractor : MonoBehaviour
         var sourcePosition = SourceTransform.position;
         return new Vector3(sourcePosition.x + xOffset,
             sourcePosition.y + yOffset, sourcePosition.z);
+    }
+    
+    void InitParticleObject( ref GameObject obj , ref ParticlePartData data)
+    {
+        var particleImage = obj.GetComponent<Image>();
+        if( !particleImage ) particleImage = obj.AddComponent<Image>();
+        particleImage.sprite = data.Sprite;
+        obj.transform.position = GenerateSpawnPositionRange();
+    }
+    
+    void InitParticlePool()
+    {
+        _particlePartData = new ParticlePartData(SpawnImage);
+        
+        if(!ParticleAttractorPool.Instance){
+            var obj = new GameObject("UIParticleAttractor_Pool",typeof(RectTransform));
+            obj.transform.SetParent( transform.parent );
+            obj.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
+            obj.transform.localPosition = transform.localPosition;
+            obj.AddComponent<ParticleAttractorPool>();
+        }
+        
+        _particleAttractorPool = ParticleAttractorPool.Instance;
     }
 }

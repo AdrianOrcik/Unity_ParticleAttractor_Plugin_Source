@@ -14,6 +14,7 @@
             </e>
             <e p="ParticleAttractor.cs" t="Include" />
             <e p="ParticleAttractorHelper.cs" t="Include" />
+            <e p="ParticleAttractorPool.cs" t="Include" />
           </e>
           <e p="Demigiant" t="Include">
             <e p="DOTween" t="Include">

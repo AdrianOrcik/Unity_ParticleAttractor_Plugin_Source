@@ -1,6 +1,7 @@
 :rocket: Particle Attractor
 ---------
-(Unity open source plugin) - Package contains open source code
+(Unity open source plugin) - Package contains open source code.
+
 Boost your UI effect to another level.
 
 ![image](https://user-images.githubusercontent.com/14979589/73867506-8ccbbc80-484f-11ea-8df4-aa3fcee711c2.png)

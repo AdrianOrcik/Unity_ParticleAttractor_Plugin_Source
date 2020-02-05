@@ -6,6 +6,14 @@ Boost your UI effect to another level.
 
 ![image](https://user-images.githubusercontent.com/14979589/73867506-8ccbbc80-484f-11ea-8df4-aa3fcee711c2.png)
 
+:page_facing_up: Examples
+--------- 
+#### Simple Effect
+![SimpleAttractorEffect](https://user-images.githubusercontent.com/14979589/73284387-29adaa80-41fd-11ea-8229-16e46664aa7a.gif)
+
+#### Drawed Effect 
+![DrawAttractorEffect](https://user-images.githubusercontent.com/14979589/73284391-2aded780-41fd-11ea-8573-99ed373e4bda.gif)
+
 :bulb: Idea
 ---------
 Develop particle attractor tool with a focus to the juicy specific situation in-game. For example, rewarding players or buying items in the shop, etc. The main reason for the tool is to give players better feelings from specific situations and from a game. The tool should be able to give non-technical department ability for easy use in workflow by a handy editor.
@@ -79,14 +87,6 @@ Particle Attractor API is powered by Builder Patter for universal and easy usabi
   * Means currently PA has an active process
 * SetAsDeactivated()
   * Means currently PA has not active process & is ready for use
-
-:page_facing_up: Examples
---------- 
-#### Simple Effect
-![SimpleAttractorEffect](https://user-images.githubusercontent.com/14979589/73284387-29adaa80-41fd-11ea-8229-16e46664aa7a.gif)
-
-#### Drawed Effect 
-![DrawAttractorEffect](https://user-images.githubusercontent.com/14979589/73284391-2aded780-41fd-11ea-8573-99ed373e4bda.gif)
 
 :wrench: Requirement
 ---------

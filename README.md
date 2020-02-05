@@ -22,7 +22,7 @@ Develop particle attractor tool with a focus to the juicy specific situation in-
 * ParticleAttractorHelper
   * The static class which contain supported methods like data getters or data structures
 * ParticleAttractorPool
-  * Share obj pool with flyweight optimization on objects 
+  * Shared obj pool with flyweight optimization on objects 
 * API
   * Prepared accessibility for easy implementation in the game
   

@@ -91,4 +91,4 @@ Particle Attractor API is powered by Builder Patter for universal and easy usabi
 :package: Installing
 ---------
 * Download & import package
-* [Download Here](https://github.com/AdrianOrcik/Unity_Plugin_TodoIst)
+* [Download Here](https://github.com/AdrianOrcik/Unity_Plugin_ParticleAttractor)

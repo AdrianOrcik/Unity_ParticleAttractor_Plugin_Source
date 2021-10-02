@@ -8,16 +8,16 @@ using UnityEditor;
 using UnityEditorInternal;
 
 [CustomEditor( typeof( ParticleAttractor ) )]
-public class ParticleAttractorInspector : Editor
+public class InspectorEditorPA : Editor
 {
-    ReorderableList _scenarioList;
-    List<MethodInfo> _scenarioInfo = new List<MethodInfo>();
+    private ReorderableList _scenarioList;
+    private List<MethodInfo> _scenarioInfo = new List<MethodInfo>();
 
     const float X_PADDING = 10.0f;
     string _templateName;
 
-    ParticleAttractor ParticleAttractor => target as ParticleAttractor;
-
+    private ParticleAttractor ParticleAttractor => target as ParticleAttractor;
+    
     void InitScenarioList()
     {
         _scenarioList = new ReorderableList(ParticleAttractor.ScenarioList,typeof(ScenarioAction), true, true, true, true);
@@ -83,10 +83,10 @@ public class ParticleAttractorInspector : Editor
                  item.RangeFloatParam =  EditorGUI.Vector2Field( rowRect,paramInfo[i].Name,item.RangeFloatParam);
              }
              
-             if( paramInfo[i].ParameterType == typeof( Transform ) )
-             {
-                 item.TransformParam = (Transform)EditorGUI.ObjectField( rowRect,paramInfo[i].Name,  item.TransformParam, typeof(Transform), true );
-             }
+             // if( paramInfo[i].ParameterType == typeof( Transform ) )
+             // {
+             //     //item.TransformParam = (Transform)EditorGUI.ObjectField( rowRect,paramInfo[i].Name,  item.TransformParam, typeof(Transform), true );
+             // }
              
              if( paramInfo[i].ParameterType == typeof( Vector3 ) )
              {
@@ -178,8 +178,26 @@ public class ParticleAttractorInspector : Editor
              BindingFlags.Public | 
              BindingFlags.Instance).Where( p=>p.IsDefined( typeof(ParticleScenario ),true)).ToList();
          
+         GUILayout.BeginVertical();
+             GUILayout.BeginHorizontal();
+                 
+                 if(GUILayout.Button( "Save" ))
+                 {
+                   SaveWindowPA.SetScenarioData(ParticleAttractor.ScenarioList);
+                   SaveWindowPA.Init();
+                 }
+                 if(GUILayout.Button( "Load" ))
+                 {
+                    string path = EditorUtility.OpenFilePanel("Load Scenario", "ParticleAttractorScenarioData", "*.*");
+                    string[] filteredPath = path.Split('/');
+                    IScenarioHandler scenarioHandler = new NewtonsoftScenarioHandler();
+                    ParticleAttractor.ScenarioList = scenarioHandler.Load<List<ScenarioAction>>(filteredPath.Last());
+                 }
+             GUILayout.EndHorizontal();
+         GUILayout.EndVertical ();
+         
          base.OnInspectorGUI();
-     
+         
      }
      
      void OnSceneGUI()

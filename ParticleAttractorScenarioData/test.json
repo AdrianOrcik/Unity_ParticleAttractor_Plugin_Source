@@ -1,0 +1,65 @@
+[
+  {
+    "ActionID": 1,
+    "TweenEase": 0,
+    "VectorParam_1": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5
+    },
+    "VectorParam_2": {
+      "x": 0.3,
+      "y": 0.3,
+      "z": 0.3
+    },
+    "FloatParam": 0.0,
+    "BoolParam": false,
+    "DurationFloatParam": 0.25,
+    "RangeFloatParam": {
+      "x": 0.0,
+      "y": 0.0
+    }
+  },
+  {
+    "ActionID": 7,
+    "TweenEase": 0,
+    "VectorParam_1": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "VectorParam_2": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "FloatParam": 0.0,
+    "BoolParam": false,
+    "DurationFloatParam": 1.5,
+    "RangeFloatParam": {
+      "x": 0.0,
+      "y": 0.0
+    }
+  },
+  {
+    "ActionID": 1,
+    "TweenEase": 0,
+    "VectorParam_1": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5
+    },
+    "VectorParam_2": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "FloatParam": 0.0,
+    "BoolParam": false,
+    "DurationFloatParam": 0.25,
+    "RangeFloatParam": {
+      "x": 0.0,
+      "y": 0.0
+    }
+  }
+]

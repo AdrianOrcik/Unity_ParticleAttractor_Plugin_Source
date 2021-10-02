@@ -15,15 +15,16 @@ public struct DifferentCanvasTarget
 [Serializable]
 public class ScenarioAction
 {
-    [SerializeField] public int ActionID;
-    [SerializeField] public Ease TweenEase;
-    [SerializeField] public Vector3 VectorParam_1;
-    [SerializeField] public Vector3 VectorParam_2;
-    [SerializeField] public Transform TransformParam;
-    [SerializeField] public float FloatParam;
-    [SerializeField] public bool BoolParam;
-    [SerializeField] public float DurationFloatParam;
-    [SerializeField] public Vector2 RangeFloatParam;
+    [SerializeField] public int ActionID = 0;
+    [SerializeField] public Ease TweenEase = (Ease)0;
+    [SerializeField] public Vector3 VectorParam_1 = Vector3.zero;
+    [SerializeField] public Vector3 VectorParam_2 = Vector3.zero;
+    //todo: check if we need transform parameter
+    //[SerializeField] public Transform TransformParam = null;
+    [SerializeField] public float FloatParam = 0.0f;
+    [SerializeField] public bool BoolParam = false;
+    [SerializeField] public float DurationFloatParam = 0.0f;
+    [SerializeField] public Vector2 RangeFloatParam = Vector2.zero;
 }
 
 [Serializable]

@@ -2,11 +2,11 @@ using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
 
-public class NewtonsoftScenarioHandler : ScenarioAbstractHandler
+public class NewtonsoftScenarioHandler : IScenarioHandler
 {
     private const string FOLER_NAME = "ParticleAttractorScenarioData";
     
-    public override void Save( string fileName, object saveData, bool isPersistent = false)
+    public void Save( string fileName, object saveData, bool isPersistent = false)
     {
         if(isPersistent){
             SaveScenarioPersistent(fileName, saveData);
@@ -15,16 +15,14 @@ public class NewtonsoftScenarioHandler : ScenarioAbstractHandler
         }
     }
 
-    public override T Load<T>(string filename, bool isPersistent = false)
+    public T Load<T>(string filename, bool isPersistent = false)
     {
         return isPersistent ? LoadScenarioPersistent<T>(filename) : LoadScenario<T>(filename);
     }
     
     void SaveScenario(string fileName, object saveData)
     {
-        if (!IsFolderValid(FOLER_NAME))
-            Directory.CreateDirectory(FOLER_NAME);
-            
+        Directory.CreateDirectory(FOLER_NAME);
         string json = JsonConvert.SerializeObject(saveData, Formatting.Indented, new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore
@@ -43,13 +41,15 @@ public class NewtonsoftScenarioHandler : ScenarioAbstractHandler
     
     T LoadScenario<T>(string fileName)
     {
-        string json = File.ReadAllText(FOLER_NAME + "/" + fileName + ".json");
+        string fileNameWithExtension = fileName.Contains(".json") ? fileName : fileName + ".json"; 
+        string json = File.ReadAllText(FOLER_NAME + "/" + fileNameWithExtension);
         return JsonConvert.DeserializeObject<T>(json);
     }
     
     T LoadScenarioPersistent<T>(string fileName)
     {
-        string json = File.ReadAllText(Application.persistentDataPath + "/" + fileName + ".json");
+        string fileNameWithExtension = fileName.Contains(".json") ? fileName : fileName + ".json"; 
+        string json = File.ReadAllText(Application.persistentDataPath + "/" + fileNameWithExtension);
         return JsonConvert.DeserializeObject<T>(json);
     }
     

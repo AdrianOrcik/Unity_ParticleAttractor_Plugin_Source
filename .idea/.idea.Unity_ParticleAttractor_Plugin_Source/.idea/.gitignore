@@ -1,0 +1,11 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/projectSettingsUpdater.xml
+/.idea.Unity_ParticleAttractor_Plugin_Source.iml
+/modules.xml
+# Datasource local storage ignored files
+/../../../../../../:\Unity_Plugins\Unity_ParticleAttractor_Plugin_Source\.idea\.idea.Unity_ParticleAttractor_Plugin_Source\.idea/dataSources/
+/dataSources.local.xml

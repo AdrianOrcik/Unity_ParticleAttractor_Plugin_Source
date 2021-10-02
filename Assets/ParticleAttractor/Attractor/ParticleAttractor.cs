@@ -9,6 +9,9 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
+//todo: split this script by logical scripts 
+//todo: implement scenario management (save, load, remove) + inspector
+//todo: implement 
 public class ParticleAttractor : MonoBehaviour
 {
     #region PA_Events
@@ -67,12 +70,41 @@ public class ParticleAttractor : MonoBehaviour
     ParticleAttractorPool _particleAttractorPool;
     ParticlePartData _particlePartData;
     GameObject _particleObj;
-    MethodInfo[] _scenarioInfos;
+    private MethodInfo[] _scenarioInfos;
     
     //Editor based attraction events
     public UnityEvent OnBeforePlay;
     public UnityEvent OnParticleDone;
     public UnityEvent OnAfterPlay;
+
+    private ScenarioAbstractHandler _scenarioHandler;
+
+    //todo: finalize it
+    public class PAData
+    {
+        public int One = 0;
+        public int Two = 0;
+    }
+
+    [ContextMenu("SaveJson")]
+    public void TestSaveJson()
+    {
+        var testData = new PAData
+        {
+            One = 11,
+            Two = 12
+        };
+
+        _scenarioHandler = new NewtonsoftScenarioHandler();
+        _scenarioHandler.Save("scenario", testData);
+    }
+    
+    [ContextMenu("LoadJson")]
+    public void TestLoadJson()
+    {
+        _scenarioHandler = new NewtonsoftScenarioHandler();
+        var testData = _scenarioHandler.Load<PAData>("scenario");
+    }
     
     void Awake()
     {
@@ -277,6 +309,7 @@ public class ParticleAttractor : MonoBehaviour
         SetAsDeactivated();
     }
     
+    //todo: is possible to redesign this?
     void GenerateSequences()
     {
         foreach( var action in ScenarioList )
@@ -310,6 +343,7 @@ public class ParticleAttractor : MonoBehaviour
         } 
     }
     
+    //todo: review all tween methods + check own tween lib and implement 
     #region PA_Tweens
     [ParticleScenario]
     public Tweener Transform_DoScale(Ease tweenEase,Vector3 toScale, float duration)

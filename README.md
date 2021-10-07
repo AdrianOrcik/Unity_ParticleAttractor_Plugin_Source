@@ -8,10 +8,10 @@ Boost your UI effect to another level.
 
 :page_facing_up: Examples
 --------- 
-#### Simple Effect
+#### Linear effect
 ![SimpleAttractorEffect](https://user-images.githubusercontent.com/14979589/73284387-29adaa80-41fd-11ea-8229-16e46664aa7a.gif)
 
-#### Drawed Effect 
+#### Custom draw effect 
 ![DrawAttractorEffect](https://user-images.githubusercontent.com/14979589/73284391-2aded780-41fd-11ea-8573-99ed373e4bda.gif)
 
 :bulb: Idea
